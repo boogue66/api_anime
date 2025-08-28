@@ -2,7 +2,7 @@ import { Router } from "express";
 import * as animeCtrl from "../controllers/anime.controller.js";
 import { validate } from "../middlewares/validator.middleware.js";
 import {
-  createAnimeSchema, updateAnimeSchema, filterAnimesSchema, paginationSchema, searchSchema, idSchema, episodeParamsSchema,
+  createAnimeSchema, updateAnimeSchema, filterAnimesSchema, paginationSchema, searchSchema, idSchema, slugSchema, episodeParamsSchema,
 } from "../validators/anime.validators.js";
 
 const router = Router();
@@ -15,12 +15,12 @@ router.get(
 
 router.get(
   "/:slug",
-  validate(idSchema, "params"),
+  validate(slugSchema, "params"),
   animeCtrl.getAnimeBySlug
 );
 router.get(
   "/:slug/episodes",
-  validate(idSchema, "params"),
+  validate(slugSchema, "params"),
   animeCtrl.getAnimeEpisodes
 );
 router.get(
