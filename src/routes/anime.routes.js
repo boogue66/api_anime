@@ -2,22 +2,30 @@ import { Router } from "express";
 import * as animeCtrl from "../controllers/anime.controller.js";
 import { validate } from "../middlewares/validator.middleware.js";
 import {
-  createAnimeSchema, updateAnimeSchema, filterAnimesSchema, paginationSchema, searchSchema, idSchema, slugSchema, episodeParamsSchema,
+  createAnimeSchema,
+  updateAnimeSchema,
+  filterAnimesSchema,
+  paginationSchema,
+  searchSchema,
+  idSchema,
+  slugSchema,
+  episodeParamsSchema,
 } from "../validators/anime.validators.js";
 
 const router = Router();
 //* Routes for Anime *//
-router.get(
-  "/",
+router.get("/", validate(paginationSchema, "query"), animeCtrl.getAnimes);
+
+//* Search *//
+router.get("/search", validate(searchSchema, "query"), animeCtrl.searchAnimes);
+router.post(
+  "/search/by-filter",
+  validate(filterAnimesSchema, "body"),
   validate(paginationSchema, "query"),
-  animeCtrl.getAnimes
+  animeCtrl.filterAnimes
 );
 
-router.get(
-  "/:slug",
-  validate(slugSchema, "params"),
-  animeCtrl.getAnimeBySlug
-);
+router.get("/:slug", validate(slugSchema, "params"), animeCtrl.getAnimeBySlug);
 router.get(
   "/:slug/episodes",
   validate(slugSchema, "params"),
@@ -54,16 +62,6 @@ router.get(
   validate(paginationSchema, "query"),
   animeCtrl.getListLatestAmimes
 );
-
-//* Search *//
-router.get("/search", validate(searchSchema, "query"), animeCtrl.searchAnimes);
-router.post(
-  "/search/by-filter",
-  validate(filterAnimesSchema, "body"),
-  validate(paginationSchema, "query"),
-  animeCtrl.filterAnimes
-);
-
 
 //* CRUD *//
 router.post("/new", validate(createAnimeSchema, "body"), animeCtrl.createAnime);
