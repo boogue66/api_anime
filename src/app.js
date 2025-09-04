@@ -24,6 +24,10 @@ app.get("/", (req, res) => {
   res.json({ message: "Welcome to my anime API" });
 });
 
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
 app.use("/api/animes", animeRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/history", historyRoutes);
