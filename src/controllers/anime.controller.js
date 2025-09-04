@@ -80,11 +80,11 @@ export const getListOnAirAnimes = catchAsync(async (req, res, next) => {
 });
 
 export const getListLatestEpisodes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1 } = req.query;
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const options = {
     page: parseInt(page, 10),
-    limit: parseInt(limit, 10),
+    limit: 3,
     sort: { "episodes.updatedAt": -1 },
     select: "title slug poster status ",
   };
@@ -100,13 +100,20 @@ export const getListLatestEpisodes = catchAsync(async (req, res, next) => {
 
 export const getListLatestAmimes = catchAsync(async (req, res, next) => {
   const { page = 1, limit = 20 } = req.query;
+  const currentYear = new Date().getFullYear();
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
     sort: { updatedAt: -1 },
     select: "title slug poster status",
   };
-  const animes = await Anime.paginate({ status: "En emision" }, options);
+  const animes = await Anime.paginate(
+    {
+      status: "En emision",
+      year: currentYear
+    },
+    options
+  );
   res.json(animes);
 });
 
