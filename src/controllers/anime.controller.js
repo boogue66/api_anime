@@ -84,7 +84,7 @@ export const getListLatestEpisodes = catchAsync(async (req, res, next) => {
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const options = {
     page: parseInt(page, 10),
-    limit: 3,
+    limit: parseInt(limit, 10),
     sort: { "episodes.updatedAt": -1 },
     select: "title slug poster status ",
   };
