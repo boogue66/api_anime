@@ -43,7 +43,17 @@ export const getAnimeBySlug = catchAsync(async (req, res, next) => {
     {
       $project: {
         totalEpisodes: { $size: "$episodes" },
-        paginatedEpisodes: { $slice: ["$episodes", skip, limitInt] },
+        // Ordenar los episodios en orden descendente antes de paginar
+        // Asumiendo que 'episode' es el campo por el que quieres ordenar dentro de cada objeto de episodio
+        sortedEpisodes: { $sortArray: { input: "$episodes", sortBy: { episode: -1 } } },
+        _id: 0,
+      },
+    },
+    {
+      $project: {
+        totalEpisodes: "$totalEpisodes",
+        // Ahora aplicamos el slice al array ya ordenado
+        paginatedEpisodes: { $slice: ["$sortedEpisodes", skip, limitInt] },
         _id: 0,
       },
     },
@@ -221,7 +231,17 @@ export const getAnimeEpisodes = catchAsync(async (req, res, next) => {
     {
       $project: {
         totalEpisodes: { $size: "$episodes" },
-        paginatedEpisodes: { $slice: ["$episodes", skip, limitInt] },
+        // Ordenar los episodios en orden descendente antes de paginar
+        // Asumiendo que 'episode' es el campo por el que quieres ordenar dentro de cada objeto de episodio
+        sortedEpisodes: { $sortArray: { input: "$episodes", sortBy: { episode: -1 } } },
+        _id: 0,
+      },
+    },
+    {
+      $project: {
+        totalEpisodes: "$totalEpisodes",
+        // Ahora aplicamos el slice al array ya ordenado
+        paginatedEpisodes: { $slice: ["$sortedEpisodes", skip, limitInt] },
         _id: 0,
       },
     },
