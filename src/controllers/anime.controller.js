@@ -22,10 +22,12 @@ export const getAnimes = catchAsync(async (req, res, next) => {
 
 export const getAnimeBySlug = catchAsync(async (req, res, next) => {
   const { page = 1, limit = 25 } = req.query;
+
   const pageInt = parseInt(page, 10);
   const limitInt = parseInt(limit, 10);
   const skip = (pageInt - 1) * limitInt;
 
+  // Paso 1: Obtener el documento del anime sin los episodios para que la carga sea rápida.
   // Paso 1: Obtener el documento del anime sin los episodios para que la carga sea rápida.
   const anime = await Anime.findOne({ slug: req.params.slug }).select(
     "-episodes"
@@ -55,7 +57,12 @@ export const getAnimeBySlug = catchAsync(async (req, res, next) => {
   const totalPages = Math.ceil(totalEpisodes / limitInt);
 
   res.status(200).json({
-    ...anime.toObject(),
+    title: anime.title,
+    slug: anime.url, // Assuming slug is url
+    poster: anime.poster,
+    status: anime.status,
+    genres: anime.genres,
+    last_episode: anime.last_episode,
     episodes: paginatedEpisodes,
     episodesPagination: {
       totalEpisodes,

@@ -95,7 +95,7 @@ URL Base: `http://localhost:3000/api` (o tu puerto configurado)
 
 **`GET /api/animes/:slug`**
 
-Obtiene los detalles de un anime específico. Los episodios se devuelven de forma paginada para mejorar el rendimiento.
+Obtiene los detalles principales de un anime específico para una carga rápida. Los episodios se devuelven de forma paginada.
 
 *   **Parámetros de Consulta (Query Params):**
     *   `page` (opcional, por defecto: `1`): El número de página de episodios a devolver.
@@ -106,10 +106,11 @@ Obtiene los detalles de un anime específico. Los episodios se devuelven de form
     ```json
     {
       "title": "One Piece",
-      "slug": "one-piece",
+      "slug": "one-piece-url",
       "poster": "url_del_poster.jpg",
       "status": "En emision",
       "genres": ["Action", "Adventure", "Comedy", "Fantasy"],
+      "last_episode": 1100,
       "episodes": [
         // ... array de episodios para la página solicitada
       ],
