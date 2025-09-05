@@ -8,7 +8,7 @@ export const createAnime = catchAsync(async (req, res, next) => {
 });
 
 export const getAnimes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1, limit = 25 } = req.query;
   const options = {
     select: "title slug poster status genres last_episode -_id",
     page: parseInt(page, 10),
@@ -21,11 +21,31 @@ export const getAnimes = catchAsync(async (req, res, next) => {
 });
 
 export const getAnimeBySlug = catchAsync(async (req, res, next) => {
+  const { page = 1, limit = 25 } = req.query;
   const anime = await Anime.findOne({ slug: req.params.slug });
   if (!anime) {
     return next(new AppError("Anime not found", 404));
   }
-  res.status(200).json(anime);
+
+  const startIndex = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+  const endIndex = parseInt(page, 10) * parseInt(limit, 10);
+
+  const paginatedEpisodes = anime.episodes.slice(startIndex, endIndex);
+
+  const totalEpisodes = anime.episodes.length;
+  const totalPages = Math.ceil(totalEpisodes / parseInt(limit, 10));
+
+  res.status(200).json({
+    ...anime.toObject(), // Convert Mongoose document to a plain JavaScript object
+    episodes: paginatedEpisodes,
+    episodesPagination: {
+      totalEpisodes,
+      totalPages,
+      currentPage: parseInt(page, 10),
+      hasNextPage: endIndex < totalEpisodes,
+      hasPrevPage: startIndex > 0,
+    },
+  });
 });
 
 export const updateAnimeById = catchAsync(async (req, res, next) => {
@@ -48,7 +68,7 @@ export const deleteAnimeById = catchAsync(async (req, res, next) => {
 });
 
 export const getListComingSoonAnimes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1, limit = 25 } = req.query;
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
@@ -60,7 +80,7 @@ export const getListComingSoonAnimes = catchAsync(async (req, res, next) => {
 });
 
 export const getListFinishedAnimes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1, limit = 25 } = req.query;
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
@@ -70,7 +90,7 @@ export const getListFinishedAnimes = catchAsync(async (req, res, next) => {
 });
 
 export const getListOnAirAnimes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1, limit = 25 } = req.query;
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
@@ -80,7 +100,7 @@ export const getListOnAirAnimes = catchAsync(async (req, res, next) => {
 });
 
 export const getListLatestEpisodes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1, limit = 25 } = req.query;
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const options = {
     page: parseInt(page, 10),
@@ -99,7 +119,7 @@ export const getListLatestEpisodes = catchAsync(async (req, res, next) => {
 });
 
 export const getListLatestAmimes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1, limit = 25 } = req.query;
   const currentYear = new Date().getFullYear();
   const options = {
     page: parseInt(page, 10),
@@ -119,7 +139,7 @@ export const getListLatestAmimes = catchAsync(async (req, res, next) => {
 
 export const searchAnimes = catchAsync(async (req, res, next) => {
   const { query } = req.query;
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1, limit = 25 } = req.query;
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
@@ -140,7 +160,7 @@ export const searchAnimes = catchAsync(async (req, res, next) => {
 
 export const filterAnimes = catchAsync(async (req, res, next) => {
   const { types, genres, statuses } = req.body;
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1, limit = 25 } = req.query;
 
   const query = {};
   if (types && types.length > 0) {
@@ -163,11 +183,28 @@ export const filterAnimes = catchAsync(async (req, res, next) => {
 });
 
 export const getAnimeEpisodes = catchAsync(async (req, res, next) => {
+  const { page = 1, limit = 25 } = req.query;
   const anime = await Anime.findOne({ slug: req.params.slug });
   if (!anime) {
     return next(new AppError("Anime not found", 404));
   }
-  res.status(200).json(anime.episodes);
+
+  const startIndex = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+  const endIndex = parseInt(page, 10) * parseInt(limit, 10);
+
+  const paginatedEpisodes = anime.episodes.slice(startIndex, endIndex);
+
+  const totalEpisodes = anime.episodes.length;
+  const totalPages = Math.ceil(totalEpisodes / parseInt(limit, 10));
+
+  res.status(200).json({
+    episodes: paginatedEpisodes,
+    totalEpisodes,
+    totalPages,
+    currentPage: parseInt(page, 10),
+    hasNextPage: endIndex < totalEpisodes,
+    hasPrevPage: startIndex > 0,
+  });
 });
 
 export const getAnimeEpisodeServers = catchAsync(async (req, res, next) => {
