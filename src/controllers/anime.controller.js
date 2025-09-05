@@ -80,7 +80,7 @@ export const getListOnAirAnimes = catchAsync(async (req, res, next) => {
 });
 
 export const getListLatestEpisodes = catchAsync(async (req, res, next) => {
-  const { page = 1 } = req.query;
+  const { page = 1, limit = 20 } = req.query;
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const options = {
     page: parseInt(page, 10),
