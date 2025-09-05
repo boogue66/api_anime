@@ -84,12 +84,67 @@ URL Base: `http://localhost:3000/api` (o tu puerto configurado)
 *   `GET /api/animes/list/on-air`: Obtiene la lista de animes en emisión.
 *   `GET /api/animes/list/finished`: Obtiene la lista de animes finalizados.
 *   `GET /api/animes/list/coming-soon`: Obtiene la lista de próximos animes.
-*   `GET /api/animes/:slug`: Obtiene un anime por su slug.
-*   `GET /api/animes/:slug/episodes`: Obtiene los episodios de un anime.
+*   `GET /api/animes/:slug`: Obtiene un anime por su slug, con los episodios paginados.
+*   `GET /api/animes/:slug/episodes`: Obtiene la lista de episodios paginada de un anime.
 *   `GET /api/animes/:slug/episodes/:episode`: Obtiene los servidores de un episodio específico.
 *   `POST /api/animes/new`: (Admin) Crea una nueva entrada de anime.
 *   `PUT /api/animes/:id`: (Admin) Actualiza una entrada de anime existente por ID.
 *   `DELETE /api/animes/:id`: (Admin) Elimina una entrada de anime por ID.
+
+#### Detalles de Endpoints de Anime
+
+**`GET /api/animes/:slug`**
+
+Obtiene los detalles de un anime específico. Los episodios se devuelven de forma paginada para mejorar el rendimiento.
+
+*   **Parámetros de Consulta (Query Params):**
+    *   `page` (opcional, por defecto: `1`): El número de página de episodios a devolver.
+    *   `limit` (opcional, por defecto: `25`): El número de episodios por página.
+
+*   **Respuesta de Ejemplo:**
+
+    ```json
+    {
+      "title": "One Piece",
+      "slug": "one-piece",
+      "poster": "url_del_poster.jpg",
+      "status": "En emision",
+      "genres": ["Action", "Adventure", "Comedy", "Fantasy"],
+      "episodes": [
+        // ... array de episodios para la página solicitada
+      ],
+      "episodesPagination": {
+        "totalEpisodes": 1100,
+        "totalPages": 44,
+        "currentPage": 1,
+        "hasNextPage": true,
+        "hasPrevPage": false
+      }
+    }
+    ```
+
+**`GET /api/animes/:slug/episodes`**
+
+Obtiene la lista de episodios de un anime de forma paginada. Este endpoint ahora está correctamente implementado y optimizado.
+
+*   **Parámetros de Consulta (Query Params):**
+    *   `page` (opcional, por defecto: `1`): El número de página de episodios a devolver.
+    *   `limit` (opcional, por defecto: `25`): El número de episodios por página.
+
+*   **Respuesta de Ejemplo:**
+
+    ```json
+    {
+      "episodes": [
+        // ... array de episodios para la página solicitada
+      ],
+      "totalEpisodes": 1100,
+      "totalPages": 44,
+      "currentPage": 1,
+      "hasNextPage": true,
+      "hasPrevPage": false
+    }
+    ```
 
 ### Endpoints de Usuario (`/api/users`)
 

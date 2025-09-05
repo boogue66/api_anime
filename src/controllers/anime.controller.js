@@ -22,28 +22,47 @@ export const getAnimes = catchAsync(async (req, res, next) => {
 
 export const getAnimeBySlug = catchAsync(async (req, res, next) => {
   const { page = 1, limit = 25 } = req.query;
-  const anime = await Anime.findOne({ slug: req.params.slug });
+  const pageInt = parseInt(page, 10);
+  const limitInt = parseInt(limit, 10);
+  const skip = (pageInt - 1) * limitInt;
+
+  // Paso 1: Obtener el documento del anime sin los episodios para que la carga sea rápida.
+  const anime = await Anime.findOne({ slug: req.params.slug }).select(
+    "-episodes"
+  );
+
   if (!anime) {
     return next(new AppError("Anime not found", 404));
   }
 
-  const startIndex = (parseInt(page, 10) - 1) * parseInt(limit, 10);
-  const endIndex = parseInt(page, 10) * parseInt(limit, 10);
+  // Paso 2: Usar un pipeline de agregación para obtener solo los episodios paginados y el conteo total.
+  const results = await Anime.aggregate([
+    { $match: { slug: req.params.slug } },
+    {
+      $project: {
+        totalEpisodes: { $size: "$episodes" },
+        paginatedEpisodes: { $slice: ["$episodes", skip, limitInt] },
+        _id: 0,
+      },
+    },
+  ]);
 
-  const paginatedEpisodes = anime.episodes.slice(startIndex, endIndex);
+  if (!results || results.length === 0) {
+    return next(new AppError("Could not retrieve episodes.", 500));
+  }
 
-  const totalEpisodes = anime.episodes.length;
-  const totalPages = Math.ceil(totalEpisodes / parseInt(limit, 10));
+  const { totalEpisodes, paginatedEpisodes } = results[0];
+  const totalPages = Math.ceil(totalEpisodes / limitInt);
 
   res.status(200).json({
-    ...anime.toObject(), // Convert Mongoose document to a plain JavaScript object
+    ...anime.toObject(),
     episodes: paginatedEpisodes,
     episodesPagination: {
       totalEpisodes,
       totalPages,
-      currentPage: parseInt(page, 10),
-      hasNextPage: endIndex < totalEpisodes,
-      hasPrevPage: startIndex > 0,
+      currentPage: pageInt,
+      hasNextPage: pageInt < totalPages,
+      hasPrevPage: pageInt > 1,
     },
   });
 });
@@ -182,28 +201,39 @@ export const filterAnimes = catchAsync(async (req, res, next) => {
   res.json(animes);
 });
 
+
+
 export const getAnimeEpisodes = catchAsync(async (req, res, next) => {
   const { page = 1, limit = 25 } = req.query;
-  const anime = await Anime.findOne({ slug: req.params.slug });
-  if (!anime) {
+  const pageInt = parseInt(page, 10);
+  const limitInt = parseInt(limit, 10);
+  const skip = (pageInt - 1) * limitInt;
+
+  const results = await Anime.aggregate([
+    { $match: { slug: req.params.slug } },
+    {
+      $project: {
+        totalEpisodes: { $size: "$episodes" },
+        paginatedEpisodes: { $slice: ["$episodes", skip, limitInt] },
+        _id: 0,
+      },
+    },
+  ]);
+
+  if (!results || results.length === 0) {
     return next(new AppError("Anime not found", 404));
   }
 
-  const startIndex = (parseInt(page, 10) - 1) * parseInt(limit, 10);
-  const endIndex = parseInt(page, 10) * parseInt(limit, 10);
-
-  const paginatedEpisodes = anime.episodes.slice(startIndex, endIndex);
-
-  const totalEpisodes = anime.episodes.length;
-  const totalPages = Math.ceil(totalEpisodes / parseInt(limit, 10));
+  const { totalEpisodes, paginatedEpisodes } = results[0];
+  const totalPages = Math.ceil(totalEpisodes / limitInt);
 
   res.status(200).json({
     episodes: paginatedEpisodes,
     totalEpisodes,
     totalPages,
-    currentPage: parseInt(page, 10),
-    hasNextPage: endIndex < totalEpisodes,
-    hasPrevPage: startIndex > 0,
+    currentPage: pageInt,
+    hasNextPage: pageInt < totalPages,
+    hasPrevPage: pageInt > 1,
   });
 });
 
