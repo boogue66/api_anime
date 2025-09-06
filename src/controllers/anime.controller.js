@@ -8,26 +8,26 @@ export const createAnime = catchAsync(async (req, res, next) => {
 });
 
 export const getAnimes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 25 } = req.query;
+  const { page = 1, limit = 25, sort = "desc" } = req.query;
+  const sortOrder = sort === "asc" ? 1 : -1;
   const options = {
     select: "title slug poster status genres last_episode -_id",
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
-    sort: { updatedAt: -1 },
-
+    sort: { updatedAt: sortOrder },
   };
   const animes = await Anime.paginate({}, options);
   res.json(animes);
 });
 
 export const getAnimeBySlug = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 25 } = req.query;
+  const { page = 1, limit = 25, sort = "desc" } = req.query;
 
   const pageInt = parseInt(page, 10);
   const limitInt = parseInt(limit, 10);
   const skip = (pageInt - 1) * limitInt;
+  const sortOrder = sort === "asc" ? 1 : -1;
 
-  // Paso 1: Obtener el documento del anime sin los episodios para que la carga sea rápida.
   // Paso 1: Obtener el documento del anime sin los episodios para que la carga sea rápida.
   const anime = await Anime.findOne({ slug: req.params.slug }).select(
     "-episodes"
@@ -45,7 +45,9 @@ export const getAnimeBySlug = catchAsync(async (req, res, next) => {
         totalEpisodes: { $size: "$episodes" },
         // Ordenar los episodios en orden descendente antes de paginar
         // Asumiendo que 'episode' es el campo por el que quieres ordenar dentro de cada objeto de episodio
-        sortedEpisodes: { $sortArray: { input: "$episodes", sortBy: { episode: -1 } } },
+        sortedEpisodes: {
+          $sortArray: { input: "$episodes", sortBy: { episode: sortOrder } },
+        },
         _id: 0,
       },
     },
@@ -104,44 +106,50 @@ export const deleteAnimeById = catchAsync(async (req, res, next) => {
 });
 
 export const getListComingSoonAnimes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 25 } = req.query;
+  const { page = 1, limit = 25, sort = "desc" } = req.query;
+  const sortOrder = sort === "asc" ? 1 : -1;
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
     select: "title url poster status last_episode -_id",
-    sort: { updatedAt: -1 },
+    sort: { updatedAt: sortOrder },
   };
   const animes = await Anime.paginate({ status: "Proximamente" }, options);
   res.json(animes);
 });
 
 export const getListFinishedAnimes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 25 } = req.query;
+  const { page = 1, limit = 25, sort = "desc" } = req.query;
+  const sortOrder = sort === "asc" ? 1 : -1;
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
+    sort: { updatedAt: sortOrder },
   };
   const animes = await Anime.paginate({ status: "Finalizado" }, options);
   res.json(animes);
 });
 
 export const getListOnAirAnimes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 25 } = req.query;
+  const { page = 1, limit = 25, sort = "desc" } = req.query;
+  const sortOrder = sort === "asc" ? 1 : -1;
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
+    sort: { updatedAt: sortOrder },
   };
   const animes = await Anime.paginate({ status: "En emision" }, options);
   res.json(animes);
 });
 
 export const getListLatestEpisodes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 25 } = req.query;
+  const { page = 1, limit = 25, sort = "desc" } = req.query;
+  const sortOrder = sort === "asc" ? 1 : -1;
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
-    sort: { "episodes.updatedAt": -1 },
+    sort: { "episodes.updatedAt": sortOrder },
     select: "title slug poster status ",
   };
   const animes = await Anime.paginate(
@@ -155,18 +163,19 @@ export const getListLatestEpisodes = catchAsync(async (req, res, next) => {
 });
 
 export const getListLatestAmimes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 25 } = req.query;
+  const { page = 1, limit = 25, sort = "desc" } = req.query;
+  const sortOrder = sort === "asc" ? 1 : -1;
   const currentYear = new Date().getFullYear();
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
-    sort: { updatedAt: -1 },
+    sort: { updatedAt: sortOrder },
     select: "title slug poster status",
   };
   const animes = await Anime.paginate(
     {
       status: "En emision",
-      year: currentYear
+      year: currentYear,
     },
     options
   );
@@ -174,12 +183,12 @@ export const getListLatestAmimes = catchAsync(async (req, res, next) => {
 });
 
 export const searchAnimes = catchAsync(async (req, res, next) => {
-  const { query } = req.query;
-  const { page = 1, limit = 25 } = req.query;
+  const { query, page = 1, limit = 25, sort = "asc" } = req.query;
+  const sortOrder = sort === "asc" ? 1 : -1;
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
-    sort: { updatedAt: 1 },
+    sort: { updatedAt: sortOrder },
   };
   const animes = await Anime.paginate(
     {
@@ -196,7 +205,8 @@ export const searchAnimes = catchAsync(async (req, res, next) => {
 
 export const filterAnimes = catchAsync(async (req, res, next) => {
   const { types, genres, statuses } = req.body;
-  const { page = 1, limit = 25 } = req.query;
+  const { page = 1, limit = 25, sort = "desc" } = req.query;
+  const sortOrder = sort === "asc" ? 1 : -1;
 
   const query = {};
   if (types && types.length > 0) {
@@ -212,35 +222,34 @@ export const filterAnimes = catchAsync(async (req, res, next) => {
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
+    sort: { updatedAt: sortOrder },
   };
 
   const animes = await Anime.paginate(query, options);
   res.json(animes);
 });
 
-
-
 export const getAnimeEpisodes = catchAsync(async (req, res, next) => {
-  const { page = 1, limit = 25 } = req.query;
+  const { page = 1, limit = 25, sort = "desc" } = req.query;
   const pageInt = parseInt(page, 10);
   const limitInt = parseInt(limit, 10);
   const skip = (pageInt - 1) * limitInt;
+  const sortOrder = sort === "asc" ? 1 : -1;
 
   const results = await Anime.aggregate([
     { $match: { slug: req.params.slug } },
     {
       $project: {
         totalEpisodes: { $size: "$episodes" },
-        // Ordenar los episodios en orden descendente antes de paginar
-        // Asumiendo que 'episode' es el campo por el que quieres ordenar dentro de cada objeto de episodio
-        sortedEpisodes: { $sortArray: { input: "$episodes", sortBy: { episode: -1 } } },
+        sortedEpisodes: {
+          $sortArray: { input: "$episodes", sortBy: { episode: sortOrder } },
+        },
         _id: 0,
       },
     },
     {
       $project: {
         totalEpisodes: "$totalEpisodes",
-        // Ahora aplicamos el slice al array ya ordenado
         paginatedEpisodes: { $slice: ["$sortedEpisodes", skip, limitInt] },
         _id: 0,
       },
