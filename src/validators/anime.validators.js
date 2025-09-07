@@ -50,12 +50,14 @@ export const filterAnimesSchema = Joi.object({
 export const paginationSchema = Joi.object({
   page: Joi.number().integer().min(1),
   limit: Joi.number().integer().min(1),
+  sort: Joi.string().valid('asc', 'desc'),
 });
 
 export const searchSchema = Joi.object({
   query: Joi.string().required(),
   page: Joi.number().integer().min(1),
   limit: Joi.number().integer().min(1),
+  sort: Joi.string().valid('asc', 'desc'),
 });
 
 export const idSchema = Joi.object({

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as animeCtrl from "../controllers/anime.controller.js";
 import { validate } from "../middlewares/validator.middleware.js";
+import { paginate } from "../utils/pagination.js";
 import {
   createAnimeSchema,
   updateAnimeSchema,
@@ -14,21 +15,38 @@ import {
 
 const router = Router();
 //* Routes for Anime *//
-router.get("/", validate(paginationSchema, "query"), animeCtrl.getAnimes);
+router.get(
+  "/",
+  validate(paginationSchema, "query"),
+  paginate,
+  animeCtrl.getAnimes
+);
 
 //* Search *//
-router.get("/search", validate(searchSchema, "query"), animeCtrl.searchAnimes);
+router.get(
+  "/search",
+  validate(searchSchema, "query"),
+  paginate,
+  animeCtrl.searchAnimes
+);
 router.post(
   "/search/by-filter",
   validate(filterAnimesSchema, "body"),
   validate(paginationSchema, "query"),
+  paginate,
   animeCtrl.filterAnimes
 );
 
-router.get("/:slug", validate(slugSchema, "params"), animeCtrl.getAnimeBySlug);
+router.get(
+  "/:slug",
+  validate(slugSchema, "params"),
+  paginate,
+  animeCtrl.getAnimeBySlug
+);
 router.get(
   "/:slug/episodes",
   validate(slugSchema, "params"),
+  paginate,
   animeCtrl.getAnimeEpisodes
 );
 router.get(
@@ -40,28 +58,28 @@ router.get(
 router.get(
   "/list/coming-soon",
   validate(paginationSchema, "query"),
+  paginate,
   animeCtrl.getListComingSoonAnimes
-);
-router.get(
-  "/list/finished",
-  validate(paginationSchema, "query"),
-  animeCtrl.getListFinishedAnimes
 );
 router.get(
   "/list/on-air",
   validate(paginationSchema, "query"),
+  paginate,
   animeCtrl.getListOnAirAnimes
 );
 router.get(
-  "/list/latest-episodes",
+  "/list/latest-episodes", // Updated route name
   validate(paginationSchema, "query"),
-  animeCtrl.getListLatestEpisodes
+  paginate,
+  animeCtrl.getLatestEpisodes // Updated controller function
 );
 router.get(
-  "/list/latest-animes",
+  "/list/latest-animes", // New route
   validate(paginationSchema, "query"),
-  animeCtrl.getListLatestAmimes
+  paginate,
+  animeCtrl.getLatestAnimes // New controller function
 );
+
 
 //* CRUD *//
 router.post("/new", validate(createAnimeSchema, "body"), animeCtrl.createAnime);

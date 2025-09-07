@@ -1,12 +1,13 @@
 import { Router } from "express";
 import * as userCtrl from "../controllers/user.controller.js";
 import { createUserValidation } from "../validators/user.validators.js";
+import { paginate } from "../utils/pagination.js";
 
 const router = Router();
 
 router
   .route('/')
-  .get(userCtrl.getAllUsers)
+  .get(paginate, userCtrl.getAllUsers)
   .post(createUserValidation, userCtrl.createUser);
 
 router

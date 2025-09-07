@@ -1,4 +1,3 @@
-
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
@@ -8,7 +7,20 @@ import AppError from "./utils/AppError.js";
 import userRoutes from "./routes/user.routes.js";
 import historyRoutes from "./routes/history.routes.js";
 
+// Swagger UI imports
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
+import path from "path"; // Import path module
+import { fileURLToPath } from 'url'; // Import fileURLToPath
+import { dirname } from 'path'; // Import dirname
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
+
+// Load Swagger YAML file
+const swaggerSpec = YAML.load(path.resolve(__dirname, '../swagger.yaml')); // Corrected path
 
 // Settings
 app.set("port", process.env.PORT || 3000);
@@ -18,6 +30,9 @@ app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Serve Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.get("/", (req, res) => {

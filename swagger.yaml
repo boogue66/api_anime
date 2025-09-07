@@ -1,0 +1,833 @@
+openapi: 3.0.0
+info:
+  title: Anime API
+  version: 1.0.0
+  description: A simple Express Anime API
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+tags:
+  - name: Animes
+    description: Operations related to animes
+  - name: Users
+    description: Operations related to users
+  - name: History
+    description: Operations related to user history
+paths:
+  /animes:
+    get:
+      summary: Get all animes
+      tags:
+        - Animes
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 25
+          description: Number of items per page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order (asc or desc)
+      responses:
+        200:
+          description: A list of animes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  docs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Anime'
+                  totalDocs:
+                    type: integer
+                  limit:
+                    type: integer
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  hasNextPage:
+                    type: boolean
+                  hasPrevPage:
+                    type: boolean
+        500:
+          description: Server error
+  /animes/search:
+    get:
+      summary: Search animes
+      tags:
+        - Animes
+      parameters:
+        - in: query
+          name: query
+          schema:
+            type: string
+          required: true
+          description: Search query
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 25
+          description: Number of items per page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order (asc or desc)
+      responses:
+        200:
+          description: A list of animes matching the search query
+        500:
+          description: Server error
+  /animes/search/by-filter:
+    post:
+      summary: Filter animes
+      tags:
+        - Animes
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 25
+          description: Number of items per page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order (asc or desc)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                types:
+                  type: array
+                  items:
+                    type: string
+                genres:
+                  type: array
+                  items:
+                    type: string
+                statuses:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        200:
+          description: A list of animes matching the filter criteria
+        500:
+          description: Server error
+  /animes/{slug}:
+    get:
+      summary: Get anime by slug
+      tags:
+        - Animes
+      parameters:
+        - in: path
+          name: slug
+          schema:
+            type: string
+          required: true
+          description: Slug of the anime
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for episodes
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 25
+          description: Number of episodes per page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order for episodes (asc or desc)
+      responses:
+        200:
+          description: Details of a single anime
+        404:
+          description: Anime not found
+        500:
+          description: Server error
+  /animes/{slug}/episodes:
+    get:
+      summary: Get episodes for an anime
+      tags:
+        - Animes
+      parameters:
+        - in: path
+          name: slug
+          schema:
+            type: string
+          required: true
+          description: Slug of the anime
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for episodes
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 25
+          description: Number of episodes per page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order for episodes (asc or desc)
+      responses:
+        200:
+          description: A list of episodes for the specified anime
+        404:
+          description: Anime not found
+        500:
+          description: Server error
+  /animes/{slug}/episodes/{episode}:
+    get:
+      summary: Get servers for a specific episode
+      tags:
+        - Animes
+      parameters:
+        - in: path
+          name: slug
+          schema:
+            type: string
+          required: true
+          description: Slug of the anime
+        - in: path
+          name: episode
+          schema:
+            type: integer
+          required: true
+          description: Episode number
+      responses:
+        200:
+          description: A list of servers for the specified episode
+        404:
+          description: Episode or anime not found
+        500:
+          description: Server error
+  /animes/list/coming-soon:
+    get:
+      summary: Get coming soon animes
+      tags:
+        - Animes
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 25
+          description: Number of items per page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order (asc or desc)
+      responses:
+        200:
+          description: A list of coming soon animes
+        500:
+          description: Server error
+  /animes/list/on-air:
+    get:
+      summary: Get on-air animes
+      tags:
+        - Animes
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 25
+          description: Number of items per page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order (asc or desc)
+      responses:
+        200:
+          description: A list of on-air animes
+        500:
+          description: Server error
+  /animes/list/latest-episodes:
+    get:
+      summary: Get animes with latest episodes
+      tags:
+        - Animes
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 25
+          description: Number of items per page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order (asc or desc)
+      responses:
+        200:
+          description: A list of animes with latest episodes
+        500:
+          description: Server error
+  /animes/list/latest-animes:
+    get:
+      summary: Get latest animes
+      tags:
+        - Animes
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 25
+          description: Number of items per page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order (asc or desc)
+      responses:
+        200:
+          description: A list of latest animes
+        500:
+          description: Server error
+  /animes/new:
+    post:
+      summary: Create a new anime
+      tags:
+        - Animes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnimeInput'
+      responses:
+        201:
+          description: Anime created successfully
+        500:
+          description: Server error
+  /animes/{id}:
+    put:
+      summary: Update an anime by ID
+      tags:
+        - Animes
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the anime to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnimeInput'
+      responses:
+        200:
+          description: Anime updated successfully
+        404:
+          description: Anime not found
+        500:
+          description: Server error
+    delete:
+      summary: Delete an anime by ID
+      tags:
+        - Animes
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the anime to delete
+      responses:
+        204:
+          description: Anime deleted successfully
+        404:
+          description: Anime not found
+        500:
+          description: Server error
+  /users:
+    get:
+      summary: Get all users
+      tags:
+        - Users
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 25
+          description: Number of items per page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: Sort order (asc or desc)
+      responses:
+        200:
+          description: A list of users
+        500:
+          description: Server error
+    post:
+      summary: Create a new user
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+      responses:
+        201:
+          description: User created successfully
+        500:
+          description: Server error
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the user to retrieve
+      responses:
+        200:
+          description: Details of a single user
+        404:
+          description: User not found
+        500:
+          description: Server error
+    patch:
+      summary: Update a user by ID
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the user to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+      responses:
+        200:
+          description: User updated successfully
+        404:
+          description: User not found
+        500:
+          description: Server error
+    delete:
+      summary: Delete a user by ID
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: ID of the user to delete
+      responses:
+        204:
+          description: User deleted successfully
+        404:
+          description: User not found
+        500:
+          description: Server error
+  /users/check/{email}:
+    get:
+      summary: Check user by email
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: email
+          schema:
+            type: string
+          required: true
+          description: Email of the user to check
+      responses:
+        200:
+          description: User found
+        404:
+          description: User not found
+        500:
+          description: Server error
+  /history/{userId}/history:
+    post:
+      summary: Add anime to user's history
+      tags:
+        - History
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID of the user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                animeSlug:
+                  type: string
+                status:
+                  type: string
+      responses:
+        201:
+          description: Anime added to history successfully
+        404:
+          description: User or Anime not found
+        500:
+          description: Server error
+    get:
+      summary: Get user's history
+      tags:
+        - History
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID of the user
+      responses:
+        200:
+          description: User's history
+        404:
+          description: User not found
+        500:
+          description: Server error
+  /history/{userId}/history/{animeSlug}:
+    get:
+      summary: Get specific anime history for a user
+      tags:
+        - History
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID of the user
+        - in: path
+          name: animeSlug
+          schema:
+            type: string
+          required: true
+          description: Slug of the anime
+      responses:
+        200:
+          description: Specific anime history for the user
+        404:
+          description: History entry, user or anime not found
+        500:
+          description: Server error
+    patch:
+      summary: Update specific anime history for a user
+      tags:
+        - History
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID of the user
+        - in: path
+          name: animeSlug
+          schema:
+            type: string
+          required: true
+          description: Slug of the anime
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                episodesWatched:
+                  type: array
+                  items:
+                    type: integer
+                lastEpisode:
+                  type: integer
+      responses:
+        200:
+          description: History entry updated successfully
+        404:
+          description: History entry, user or anime not found
+        500:
+          description: Server error
+    delete:
+      summary: Delete specific anime from user's history
+      tags:
+        - History
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID of the user
+        - in: path
+          name: animeSlug
+          schema:
+            type: string
+          required: true
+          description: Slug of the anime
+      responses:
+        204:
+          description: History entry deleted successfully
+        404:
+          description: History entry, user or anime not found
+        500:
+          description: Server error
+components:
+  schemas:
+    Anime:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Unique ID of the anime
+        title:
+          type: string
+        slug:
+          type: string
+        poster:
+          type: string
+        status:
+          type: string
+        genres:
+          type: array
+          items:
+            type: string
+        last_episode:
+          type: integer
+        description:
+          type: string
+        episodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Episode'
+    AnimeInput:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        poster:
+          type: string
+        status:
+          type: string
+        genres:
+          type: array
+          items:
+            type: string
+        last_episode:
+          type: integer
+        description:
+          type: string
+        episodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpisodeInput'
+      required:
+        - title
+        - slug
+        - poster
+        - status
+        - genres
+        - description
+    Episode:
+      type: object
+      properties:
+        episode:
+          type: integer
+        title:
+          type: string
+        servers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Server'
+    EpisodeInput:
+      type: object
+      properties:
+        episode:
+          type: integer
+        title:
+          type: string
+        servers:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServerInput'
+      required:
+        - episode
+        - title
+        - servers
+    Server:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+    ServerInput:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+      required:
+        - name
+        - url
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+    UserInput:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - email
+        - password
+    History:
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          type: string
+        animeId:
+          type: string
+        status:
+          type: string
+        episodesWatched:
+          type: array
+          items:
+            type: integer
+        lastEpisode:
+          type: integer

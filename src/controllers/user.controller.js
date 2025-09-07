@@ -3,13 +3,19 @@ import { catchAsync } from '../utils/catchAsync.js';
 import AppError from '../utils/AppError.js';
 
 export const getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find();
+  const users = await User.paginate({}, req.paginationOptions); // Using paginate and paginationOptions
 
   res.status(200).json({
     status: 'success',
-    results: users.length,
+    results: users.docs.length, // For paginated results
     data: {
-      users,
+      users: users.docs, // For paginated results
+      totalDocs: users.totalDocs,
+      limit: users.limit,
+      page: users.page,
+      totalPages: users.totalPages,
+      hasNextPage: users.hasNextPage,
+      hasPrevPage: users.hasPrevPage,
     },
   });
 });

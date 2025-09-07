@@ -79,7 +79,7 @@ URL Base: `http://localhost:3000/api` (o tu puerto configurado)
 *   `GET /api/animes`: Obtiene una lista paginada de animes.
 *   `GET /api/animes/search`: Busca animes por un término de consulta.
 *   `POST /api/animes/search/by-filter`: Filtra animes por criterios específicos (géneros, tipo, estado, etc.).
-*   `GET /api/animes/list/latest-episodes`: Obtiene los últimos episodios agregados.
+*   `GET /api/animes/list/latest-episodes`: Obtiene los animes con los últimos episodios actualizados (ordenados por la fecha de última actualización del anime).
 *   `GET /api/animes/list/latest-animes`: Obtiene los últimos animes agregados.
 *   `GET /api/animes/list/on-air`: Obtiene la lista de animes en emisión.
 *   `GET /api/animes/list/finished`: Obtiene la lista de animes finalizados.
@@ -157,7 +157,36 @@ Obtiene la lista de episodios de un anime de forma paginada. Este endpoint ahora
 
 ### Endpoints de Historial (`/api/history`)
 
-*   `GET /api/history/:userId/history`: Obtiene el historial de visualización de un usuario.
+*   `GET /api/history/:userId/history`: Obtiene el historial de visualización de un usuario, incluyendo los detalles completos del anime.
+
+    *   **Respuesta de Ejemplo:**
+
+        ```json
+        {
+          "status": "success",
+          "results": 1,
+          "data": {
+            "history": [
+              {
+                "_id": "65f2a9b3b3f3b3f3b3f3b3f3",
+                "userId": "65f2a9b3b3f3b3f3b3f3b3f2",
+                "status": "watching",
+                "episodesWatched": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                "lastEpisode": 12,
+                "createdAt": "2025-09-07T15:00:00.000Z",
+                "updatedAt": "2025-09-07T15:00:00.000Z",
+                "anime": {
+                  "slug": "shingeki-no-kyojin",
+                  "title": "Shingeki no Kyojin",
+                  "poster": "https://example.com/poster/shingeki.jpg",
+                  "synopsis": "Eren Jaeger vive en un mundo post-apocalíptico...",
+                  "genres": ["Action", "Drama", "Fantasy"]
+                }
+              }
+            ]
+          }
+        }
+        ```
 *   `POST /api/history/:userId/history`: Agrega un anime al historial de un usuario.
 *   `GET /api/history/:userId/history/:animeSlug`: Obtiene el historial de un anime específico para un usuario.
 *   `PATCH /api/history/:userId/history/:animeSlug`: Actualiza el historial de un anime específico (ej. episodio visto).
@@ -175,7 +204,7 @@ Representa un perfil de usuario con detalles como nombre de usuario, correo elec
 
 ### Historial
 
-Representa el historial de visualización de un usuario, vinculando usuarios a animes y potencialmente almacenando el progreso de visualización o el estado de finalización.
+Representa el historial de visualización de un usuario, vinculando usuarios a animes y potencialmente almacenando el progreso de visualización o el estado de finalización. Incluye timestamps `createdAt` y `updatedAt` para registrar la creación y última actualización.
 
 ## Contribuciones
 
