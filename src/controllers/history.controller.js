@@ -12,27 +12,30 @@ export const getHistory = catchAsync(async (req, res, next) => {
     return next(new AppError('No user found with that ID', 404));
   }
 
-  // Populate the animeId field and select only the 'slug'
   const history = await History.find({ userId }).populate({
     path: 'animeId',
-    select: 'slug', // Only select the slug field from the Anime document
   });
 
-  // Map the history to include the slug directly
-  const historyWithSlugs = history.map(entry => {
-    const historyObject = entry.toObject(); // Convert Mongoose document to plain JavaScript object
-    if (historyObject.animeId && historyObject.animeId.slug) {
-      historyObject.slug = historyObject.animeId.slug;
-      delete historyObject.animeId; // Optionally remove the populated animeId object
+  const historyWithAnime = history.map(entry => {
+    const historyObject = entry.toObject();
+    if (historyObject.animeId) {
+      historyObject.anime = {
+        slug: historyObject.animeId.slug,
+        title: historyObject.animeId.title,
+        poster: historyObject.animeId.poster,
+        synopsis: historyObject.animeId.description,
+        genres: historyObject.animeId.genres,
+      };
+      delete historyObject.animeId;
     }
     return historyObject;
   });
 
   res.status(200).json({
     status: 'success',
-    results: historyWithSlugs.length,
+    results: historyWithAnime.length,
     data: {
-      history: historyWithSlugs,
+      history: historyWithAnime,
     },
   });
 });
@@ -129,8 +132,7 @@ export const addAnimeToHistory = catchAsync(async (req, res, next) => {
     animeId: anime._id,      // ⚠ importante: Use anime._id
     status,
     episodesWatched: [],
-    lastEpisode: 0,
-    updatedAt: new Date()
+    lastEpisode: 0
   });
 
   await newHistory.save();

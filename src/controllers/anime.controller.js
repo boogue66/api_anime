@@ -145,17 +145,15 @@ export const getListOnAirAnimes = catchAsync(async (req, res, next) => {
 export const getListLatestEpisodes = catchAsync(async (req, res, next) => {
   const { page = 1, limit = 25, sort = "desc" } = req.query;
   const sortOrder = sort === "asc" ? 1 : -1;
-  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const options = {
     page: parseInt(page, 10),
     limit: parseInt(limit, 10),
-    sort: { "episodes.updatedAt": sortOrder },
+    sort: { updatedAt: sortOrder },
     select: "title slug poster status ",
   };
   const animes = await Anime.paginate(
     {
       status: "En emision",
-      "episodes.updatedAt": { $gte: twentyFourHoursAgo },
     },
     options
   );

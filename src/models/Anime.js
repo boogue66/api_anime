@@ -45,6 +45,11 @@ const animeSchema = new Schema(
       required: true,
       trim: true,
     },
+    slug: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     poster: {
       type: String,
       trim: true,
