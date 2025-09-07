@@ -9,7 +9,7 @@ const historySchema = new mongoose.Schema(
       required: true,
     },
     animeId: {
-      type: mongoose.schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Anime',
       required: true,
     },
