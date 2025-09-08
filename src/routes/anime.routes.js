@@ -12,6 +12,7 @@ import {
   slugSchema,
   episodeParamsSchema,
 } from "../validators/anime.validators.js";
+import { protect } from "../middlewares/protect.middleware.js";
 
 const router = Router();
 //* Routes for Anime *//
@@ -82,13 +83,14 @@ router.get(
 
 
 //* CRUD *//
-router.post("/new", validate(createAnimeSchema, "body"), animeCtrl.createAnime);
+router.post("/new", protect, validate(createAnimeSchema, "body"), animeCtrl.createAnime);
 router.put(
   "/:id",
+  protect,
   validate(idSchema, "params"),
   validate(updateAnimeSchema, "body"),
   animeCtrl.updateAnimeById
 );
-router.delete("/:id", validate(idSchema, "params"), animeCtrl.deleteAnimeById);
+router.delete("/:id", protect, validate(idSchema, "params"), animeCtrl.deleteAnimeById);
 
 export default router;

@@ -4,8 +4,9 @@ import cors from "cors";
 import animeRoutes from "./routes/anime.routes.js";
 import { errorHandler } from "./middlewares/error.handler.js";
 import AppError from "./utils/AppError.js";
-import userRoutes from "./routes/user.routes.js";
 import historyRoutes from "./routes/history.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import userRoutes from "./routes/user.routes.js";
 
 // Swagger UI imports
 import swaggerUi from "swagger-ui-express";
@@ -24,6 +25,8 @@ const swaggerSpec = YAML.load(path.resolve(__dirname, '../swagger.yaml')); // Co
 
 // Settings
 app.set("port", process.env.PORT || 3000);
+process.env.JWT_SECRET = 'your-secret-key';
+process.env.JWT_EXPIRES_IN = '90d';
 
 // Middlewares
 app.use(cors());
@@ -44,6 +47,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/animes", animeRoutes);
+app.use("/api/users", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/history", historyRoutes);
 

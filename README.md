@@ -10,7 +10,7 @@ Proporciona endpoints para **crear, leer, actualizar y eliminar (CRUD)** entrada
 - **Gestión de Animes:** Operaciones CRUD para entradas de anime.
 - **Gestión de Usuarios:** Operaciones CRUD para perfiles de usuario.
 - **Historial de Visualización:** Registro del historial de visualización de animes por los usuarios.
-- **Autenticación/Autorización:** (Por confirmar, probablemente manejado en las rutas de usuarios).
+- **Autenticación/Autorización:** Autenticación basada en JWT para proteger las rutas.
 - **Validación de Datos:** Validación de entradas usando `express-validator` y `Joi`.
 - **Manejo de Errores:** Manejo centralizado de errores.
 - **Paginación:** Recuperación eficiente de grandes conjuntos de datos usando `mongoose-paginate-v2`.
@@ -20,6 +20,8 @@ Proporciona endpoints para **crear, leer, actualizar y eliminar (CRUD)** entrada
 - **Node.js**
 - **Express.js**
 - **MongoDB** (con Mongoose ODM)
+- **jsonwebtoken** → Autenticación basada en JSON Web Tokens.
+- **bcryptjs** → Hashing de contraseñas.
 - **dotenv** → Variables de entorno
 - **cors** → Cross-Origin Resource Sharing
 - **morgan** → Logger de peticiones HTTP
@@ -45,11 +47,13 @@ Proporciona endpoints para **crear, leer, actualizar y eliminar (CRUD)** entrada
 
 3.  **Crea un archivo `.env`:**
 
-    Crea un archivo `.env` en el directorio raíz del proyecto y añade tu URI de conexión a MongoDB:
+    Crea un archivo `.env` en el directorio raíz del proyecto y añade tu URI de conexión a MongoDB y tus secretos de JWT:
 
     ```
     MONGODB_URI=your_mongodb_connection_string
     PORT=3000
+    JWT_SECRET=your-secret-key
+    JWT_EXPIRES_IN=90d
     ```
 
 
@@ -70,9 +74,23 @@ npm start
 
 La API se ejecutará en el puerto especificado en tu archivo `.env` (por defecto: `3000`).
 
+## Autenticación
+
+Para acceder a las rutas protegidas, primero debes obtener un token de autenticación. Para ello, puedes registrar un nuevo usuario o iniciar sesión con un usuario existente.
+
+- **Registro:** Envía una petición `POST` a `/api/users/signup` con `username`, `email` y `password` en el cuerpo de la petición.
+- **Inicio de sesión:** Envía una petición `POST` a `/api/users/login` con `email` y `password` en el cuerpo de la petición.
+
+Ambas rutas devolverán un token de autenticación. Debes incluir este token en la cabecera `Authorization` de tus peticiones a las rutas protegidas, con el formato `Bearer <token>`.
+
 ## Endpoints de la API
 
 URL Base: `http://localhost:3000/api` (o tu puerto configurado)
+
+### Endpoints de Autenticación (`/api/users`)
+
+*   `POST /api/users/signup`: Registra un nuevo usuario.
+*   `POST /api/users/login`: Inicia sesión y obtiene un token de autenticación.
 
 ### Endpoints de Anime (`/api/animes`)
 
@@ -87,9 +105,9 @@ URL Base: `http://localhost:3000/api` (o tu puerto configurado)
 *   `GET /api/animes/:slug`: Obtiene un anime por su slug, con los episodios paginados.
 *   `GET /api/animes/:slug/episodes`: Obtiene la lista de episodios paginada de un anime.
 *   `GET /api/animes/:slug/episodes/:episode`: Obtiene los servidores de un episodio específico.
-*   `POST /api/animes/new`: (Admin) Crea una nueva entrada de anime.
-*   `PUT /api/animes/:id`: (Admin) Actualiza una entrada de anime existente por ID.
-*   `DELETE /api/animes/:id`: (Admin) Elimina una entrada de anime por ID.
+*   `POST /api/animes/new`: (Protegido) Crea una nueva entrada de anime.
+*   `PUT /api/animes/:id`: (Protegido) Actualiza una entrada de anime existente por ID.
+*   `DELETE /api/animes/:id`: (Protegido) Elimina una entrada de anime por ID.
 
 #### Detalles de Endpoints de Anime
 
@@ -146,14 +164,6 @@ Obtiene la lista de episodios de un anime de forma paginada. Este endpoint ahora
       "hasPrevPage": false
     }
     ```
-
-### Endpoints de Usuario (`/api/users`)
-
-*   `GET /api/users`: Obtiene todos los usuarios.
-*   `POST /api/users`: Crea un nuevo usuario.
-*   `GET /api/users/:id`: Obtiene un usuario por ID.
-*   `PATCH /api/users/:id`: Actualiza parcialmente un usuario por ID.
-*   `DELETE /api/users/:id`: Elimina un usuario por ID.
 
 ### Endpoints de Historial (`/api/history`)
 
